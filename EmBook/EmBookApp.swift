@@ -44,10 +44,12 @@ extension BibleQuote {
         ),
     ]
     
-    static let categories = ["Courage", "Hope", "Faith"]
+
     
     static func randomQuote(for category: Category) -> BibleQuote? {
-        let filtered = basicQuotes.filter { $0.category == category}
+        let filtered = category == .all ?
+            basicQuotes :
+            basicQuotes.filter( $0.category == category)
         return filtered.randomElement()
     }
 }
