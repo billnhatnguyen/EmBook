@@ -16,15 +16,30 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            Picker("Category", selection: $selectedCategory){
-                ForEach(Category.allCases, id: \.self) { category in Text(category.rawValue)
+            HStack {
+                Spacer()
+                Menu {
+                    ForEach(Category.allCases, id: \.self) { category in
+                        Button {
+                            selectedCategory = category
+                            currentQuote = BibleQuote.randomQuote(for: category)  // Use 'category' here
+                        } label: {
+                            Text(category.rawValue)
+                        }
+                    }
+                } label: {
+                    Image("prayerHands")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .padding()
+                        .clipShape(Circle())
                 }
             }
-            .pickerStyle(.segmented)
             .padding()
             //When we change the category, please generate a random quote of that category
             .onChange(of: selectedCategory) { newCategory in currentQuote = BibleQuote.randomQuote(for: newCategory)
             }
+        }
             
             Spacer()
             
@@ -51,7 +66,7 @@ struct ContentView: View {
             }
         }
 
-    }
+    
     
 
 #Preview {
