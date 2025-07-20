@@ -21,7 +21,7 @@ struct BibleQuote: Identifiable, Codable {
     }
 }
 
-enum Category: String, CaseIterable {
+enum Category: String, CaseIterable, Codable {
     case all = "All"
     case courage = "Courage"
     case hope = "Hope"
@@ -41,18 +41,25 @@ extension BibleQuote {
             reference: "Exodus 14:14",
             testament: "Old",
             category: .hope
-        ),
+        )
     ]
     
 
     
     static func randomQuote(for category: Category) -> BibleQuote? {
-        let filtered = category == .all ?
-            basicQuotes :
-            basicQuotes.filter( $0.category == category)
+        let filtered: [BibleQuote]
+        
+        if category == .all {
+            filtered = basicQuotes
+        } else {
+            filtered = basicQuotes.filter{
+                quote in quote.category == category
+            }
+        }
         return filtered.randomElement()
     }
 }
+
 
 @main
 struct EmBookApp: App {
