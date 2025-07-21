@@ -1,73 +1,113 @@
-//
-//  ContentView.swift
-//  EmBook
-//
-//  Created by Bill Nguyen on 2025-07-10.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     
-    //This will be the bible quote default which is a random quote using our random quote function
-    @State private var currentQuote: BibleQuote? = BibleQuote.randomQuote(for: .all)
+    //This will keep track of the current bible quote index we are on while scrolling
+    @State private var currentPage = 0
     //This will be set to all by default when we don't have a selected category
     @State private var selectedCategory: Category = .all
+    //This will shuffle the bible quotes of the selected category so it is not just a static list ever single time we open it up
+    @State private var shuffledQuotes: [BibleQuote] = BibleQuote.sampleData(for: .all).shuffled()
     
     var body: some View {
-        VStack {
-            HStack {
+        ZStack(alignment: .topTrailing) {
+            Color.white.ignoresSafeArea()
+            
+            VStack {
+                
+                VerticalPager(pageCount: shuffledQuotes.count, currentIndex: $currentPage) {
+                    ForEach(0..<shuffledQuotes.count, id: \.self) { index in
+                        VStack {
+                            Text("“\(shuffledQuotes[index].text)”")
+                                .font(.title2)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            
+                            Text(shuffledQuotes[index].formattedReference)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.white)
+                    }
+                }
                 Spacer()
-                Menu {
-                    ForEach(Category.allCases, id: \.self) { category in
-                        Button {
-                            selectedCategory = category
-                            currentQuote = BibleQuote.randomQuote(for: category)  // Use 'category' here
-                        } label: {
-                            Text(category.rawValue)
+            }
+            
+            Menu {
+                ForEach(Category.allCases, id: \.self) { category in
+                    Button {
+                        selectedCategory = category
+                        currentPage = 0
+                        shuffledQuotes = BibleQuote.sampleData(for: category).shuffled()
+                    } label: {
+                        Text(category.rawValue)
+                    }
+                }
+            } label: {
+                Image("prayerHands")
+                    .resizable()
+                    .frame(width: 30, height: 30)
+                    .padding(20)
+            }
+        }
+    }
+}
+
+struct VerticalPager<Content: View>: View {
+    let pageCount: Int
+    @Binding var currentIndex: Int
+    let content: Content
+
+    init(pageCount: Int, currentIndex: Binding<Int>, @ViewBuilder content: () -> Content) {
+        self.pageCount = pageCount
+        self._currentIndex = currentIndex
+        self.content = content()
+    }
+
+    @GestureState private var translation: CGFloat = 0
+
+    var body: some View {
+        GeometryReader { geometry in
+            LazyVStack (spacing:0) {
+                self.content
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.primary.opacity(0.000000001))
+            .offset(y: -CGFloat(self.currentIndex) * geometry
+                .size.height)
+            .offset(y: self.translation)
+            .animation(.easeInOut(duration: 0.3), value: currentIndex)
+            .animation(.easeInOut(duration: 0.2), value: translation)
+            .gesture(
+                DragGesture(minimumDistance: 1)
+                    .updating(self.$translation) { value, state, _ in
+                        state = value.translation.height
+                    }
+                    .onEnded { value in
+                        let offset = value.translation.height
+                        let velocity = value.velocity.height
+                        let threshold = geometry.size.height / 2  // Keep this as CGFloat
+
+                        if abs(offset) > threshold || abs(velocity) > 200 {
+                            let direction = offset > 0 ? -1 : 1
+                            let newIndex = currentIndex + direction
+
+                            if newIndex < 0 {
+                                currentIndex = pageCount - 1  // loop to last
+                            } else if newIndex >= pageCount {
+                                currentIndex = 0  // loop to first
+                            } else {
+                                currentIndex = newIndex
+                            }
                         }
                     }
-                } label: {
-                    Image("prayerHands")
-                        .resizable()
-                        .frame(width: 30, height: 30)
-                        .padding()
-                        .clipShape(Circle())
-                }
-            }
-            .padding()
-            //When we change the category, please generate a random quote of that category
-            .onChange(of: selectedCategory) { newCategory in currentQuote = BibleQuote.randomQuote(for: newCategory)
-            }
-        }
-            
-            Spacer()
-            
-            if let quote = currentQuote{
-                Text("“\(quote.text)”")
-                    .font(.title2)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                Text(quote.formattedReference)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            } else {
-                Text("No quote found")
-                    .foregroundStyle(.gray)
-            }
-            Spacer()
-            
-            Button("New Quote"){
-                currentQuote = BibleQuote.randomQuote(for: selectedCategory)
-            }
-            .buttonStyle(.borderedProminent)
-            .padding()
-            }
-        }
 
-    
-    
+            )
+        }
+    }
+}
 
 #Preview {
     ContentView()
