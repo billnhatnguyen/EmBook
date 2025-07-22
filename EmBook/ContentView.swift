@@ -13,126 +13,141 @@ struct ContentView: View {
     @StateObject private var bookmarker = Bookmarker()
     
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Color.white.ignoresSafeArea()
-            
-            VStack {
+        NavigationView{
+            ZStack(alignment: .topTrailing) {
+                Color.white.ignoresSafeArea()
                 
-                VerticalPager(pageCount: shuffledQuotes.count, currentIndex: $currentPage) {
-                    ForEach(0..<shuffledQuotes.count, id: \.self) { index in
-                        VStack {
-                            Text("“\(shuffledQuotes[index].text)”")
-                                .font(.title2)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                            
-                            Text(shuffledQuotes[index].formattedReference)
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.white)
-                        .onTapGesture(count: 2){
-                            let haptic = UIImpactFeedbackGenerator( style: .heavy)
-                            haptic.impactOccurred()
-                            bookmarker.likeQuote(quote: shuffledQuotes[index])
+                VStack {
+                    
+                    VerticalPager(pageCount: shuffledQuotes.count, currentIndex: $currentPage) {
+                        ForEach(0..<shuffledQuotes.count, id: \.self) { index in
+                            VStack {
+                                Text("“\(shuffledQuotes[index].text)”")
+                                    .font(.title2)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                
+                                Text(shuffledQuotes[index].formattedReference)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(Color.white)
+                            .onTapGesture(count: 2){
+                                let haptic = UIImpactFeedbackGenerator( style: .heavy)
+                                haptic.impactOccurred()
+                                bookmarker.likeQuote(quote: shuffledQuotes[index])
 
 
-                        }
-                    }
-                }
-                
-                Button(action: {
-                    let quote = shuffledQuotes[currentPage]
-                    bookmarker.toggleBookmark(quote: quote)
-                }){
-                let isBookmarked = bookmarker.isBookmarked(quote: shuffledQuotes[currentPage])
-                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 28, height: 28)
-                    .foregroundColor(isBookmarked ? .blue : .gray)
-                    .padding()
-                }
-                
-                
-                Spacer()
-            }
-            
-            Menu {
-                ForEach(Category.allCases, id: \.self) { category in
-                    Button {
-                        selectedCategory = category
-                        currentPage = 0
-                        shuffledQuotes = BibleQuote.sampleData(for: category).shuffled()
-                    } label: {
-                        Text(category.rawValue)
-                    }
-                }
-            } label: {
-                Image("prayerHands")
-                    .resizable()
-                    .frame(width: 30, height: 30)
-                    .padding(20)
-            }
-        }
-    }
-}
-
-struct VerticalPager<Content: View>: View {
-    let pageCount: Int
-    @Binding var currentIndex: Int
-    let content: Content
-
-    init(pageCount: Int, currentIndex: Binding<Int>, @ViewBuilder content: () -> Content) {
-        self.pageCount = pageCount
-        self._currentIndex = currentIndex
-        self.content = content()
-    }
-
-    @GestureState private var translation: CGFloat = 0
-
-    var body: some View {
-        GeometryReader { geometry in
-            LazyVStack (spacing:0) {
-                self.content
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.primary.opacity(0.000000001))
-            .offset(y: -CGFloat(self.currentIndex) * geometry
-                .size.height)
-            .offset(y: self.translation)
-            .animation(.easeInOut(duration: 0.3), value: currentIndex)
-            .animation(.easeInOut(duration: 0.2), value: translation)
-            .gesture(
-                DragGesture(minimumDistance: 1)
-                    .updating(self.$translation) { value, state, _ in
-                        state = value.translation.height
-                    }
-                    .onEnded { value in
-                        let offset = value.translation.height
-                        let velocity = value.velocity.height
-                        let threshold = geometry.size.height / 2  // Keep this as CGFloat
-
-                        if abs(offset) > threshold || abs(velocity) > 200 {
-                            let direction = offset > 0 ? -1 : 1
-                            let newIndex = currentIndex + direction
-
-                            if newIndex < 0 {
-                                currentIndex = pageCount - 1  // loop to last
-                            } else if newIndex >= pageCount {
-                                currentIndex = 0  // loop to first
-                            } else {
-                                currentIndex = newIndex
                             }
                         }
                     }
-
-            )
+                    
+                    
+                    
+                    Button(action: {
+                        let quote = shuffledQuotes[currentPage]
+                        bookmarker.toggleBookmark(quote: quote)
+                    }){
+                    let isBookmarked = bookmarker.isBookmarked(quote: shuffledQuotes[currentPage])
+                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundColor(isBookmarked ? .blue : .gray)
+                        .padding()
+                    }
+                    
+                    
+                    Spacer()
+                }
+                
+                HStack{
+                    NavigationLink(destination: BookmarkedTileView(bookmarker: bookmarker)) {
+                        Image(systemName: "bookmark.circle")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(.blue)
+                            .padding()
+                    }
+                    Spacer()
+                    }
+                    Menu {
+                        ForEach(Category.allCases, id: \.self) { category in
+                            Button {
+                                selectedCategory = category
+                                currentPage = 0
+                                shuffledQuotes = BibleQuote.sampleData(for: category).shuffled()
+                            } label: {
+                                Text(category.rawValue)
+                            }
+                        }
+                    } label: {
+                        Image("prayerHands")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .padding(20)
+                    }
+                }
+            }
         }
     }
-}
+
+        struct VerticalPager<Content: View>: View {
+            let pageCount: Int
+            @Binding var currentIndex: Int
+            let content: Content
+            
+            init(pageCount: Int, currentIndex: Binding<Int>, @ViewBuilder content: () -> Content) {
+                self.pageCount = pageCount
+                self._currentIndex = currentIndex
+                self.content = content()
+            }
+            
+            @GestureState private var translation: CGFloat = 0
+            
+            var body: some View {
+                GeometryReader { geometry in
+                    LazyVStack (spacing:0) {
+                        self.content
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.primary.opacity(0.000000001))
+                    .offset(y: -CGFloat(self.currentIndex) * geometry
+                        .size.height)
+                    .offset(y: self.translation)
+                    .animation(.easeInOut(duration: 0.3), value: currentIndex)
+                    .animation(.easeInOut(duration: 0.2), value: translation)
+                    .gesture(
+                        DragGesture(minimumDistance: 1)
+                            .updating(self.$translation) { value, state, _ in
+                                state = value.translation.height
+                            }
+                            .onEnded { value in
+                                let offset = value.translation.height
+                                let velocity = value.velocity.height
+                                let threshold = geometry.size.height / 2  // Keep this as CGFloat
+                                
+                                if abs(offset) > threshold || abs(velocity) > 200 {
+                                    let direction = offset > 0 ? -1 : 1
+                                    let newIndex = currentIndex + direction
+                                    
+                                    if newIndex < 0 {
+                                        currentIndex = pageCount - 1  // loop to last
+                                    } else if newIndex >= pageCount {
+                                        currentIndex = 0  // loop to first
+                                    } else {
+                                        currentIndex = newIndex
+                                    }
+                                }
+                            }
+                        
+                    )
+                }
+            }
+    }
+
 
 #Preview {
     ContentView()
