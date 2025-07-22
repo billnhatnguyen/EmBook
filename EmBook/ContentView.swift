@@ -9,6 +9,9 @@ struct ContentView: View {
     //This will shuffle the bible quotes of the selected category so it is not just a static list ever single time we open it up
     @State private var shuffledQuotes: [BibleQuote] = BibleQuote.sampleData(for: .all).shuffled()
     
+    //This is our bookmark manger dude!
+    @StateObject private var bookmarker = Bookmarker()
+    
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Color.white.ignoresSafeArea()
@@ -29,8 +32,30 @@ struct ContentView: View {
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color.white)
+                        .onTapGesture(count: 2){
+                            let haptic = UIImpactFeedbackGenerator( style: .heavy)
+                            haptic.impactOccurred()
+                            bookmarker.likeQuote(quote: shuffledQuotes[index])
+
+
+                        }
                     }
                 }
+                
+                Button(action: {
+                    let quote = shuffledQuotes[currentPage]
+                    bookmarker.toggleBookmark(quote: quote)
+                }){
+                let isBookmarked = bookmarker.isBookmarked(quote: shuffledQuotes[currentPage])
+                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
+                    .foregroundColor(isBookmarked ? .blue : .gray)
+                    .padding()
+                }
+                
+                
                 Spacer()
             }
             
