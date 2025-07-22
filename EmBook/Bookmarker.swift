@@ -36,6 +36,12 @@ func toggleBookmark (quote: BibleQuote) {
         bookmarkedQuotes.append(quote)
     }
 }
+
+func likeQuote (quote: BibleQuote) {
+    if !bookmarkedQuotes.contains(quote) {
+        bookmarkedQuotes.append(quote)
+    }
+}
     
 func isBookmarked(quote: BibleQuote) -> Bool {
         bookmarkedQuotes.contains(quote)
