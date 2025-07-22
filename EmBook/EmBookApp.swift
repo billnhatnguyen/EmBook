@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 // The Data Model
-struct BibleQuote: Identifiable, Codable {
+struct BibleQuote: Identifiable, Codable, Equatable {
     let id = UUID()
     let text: String
     let reference: String
