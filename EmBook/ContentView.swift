@@ -12,6 +12,15 @@ struct ContentView: View {
     //This is our bookmark manger dude!
     @StateObject private var bookmarker = Bookmarker()
     
+    //This is our note reflections dude!
+    @StateObject private var reflectioner = Reflections()
+    
+    private func refreshQuotes() {
+        shuffledQuotes = BibleQuote.sampleData(for: selectedCategory)
+            .filter { !bookmarker.isBookmarked(quote: $0) }
+            .shuffled()
+    }
+    
     var body: some View {
         NavigationView{
             ZStack(alignment: .topTrailing) {
@@ -46,10 +55,11 @@ struct ContentView: View {
                     
                     
                     Button(action: {
+                        guard !shuffledQuotes.isEmpty, currentPage < shuffledQuotes.count else { return }
                         let quote = shuffledQuotes[currentPage]
                         bookmarker.toggleBookmark(quote: quote)
                     }){
-                    let isBookmarked = bookmarker.isBookmarked(quote: shuffledQuotes[currentPage])
+                        let isBookmarked = bookmarker.isBookmarked(quote: shuffledQuotes[currentPage])
                     Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                         .resizable()
                         .scaledToFit()
@@ -63,7 +73,7 @@ struct ContentView: View {
                 }
                 
                 HStack{
-                    NavigationLink(destination: BookmarkedTileView(bookmarker: bookmarker)) {
+                    NavigationLink(destination: BookmarkedTileView(bookmarker: bookmarker)){
                         Image(systemName: "bookmark.circle")
                             .resizable()
                             .frame(width: 30, height: 30)
@@ -77,7 +87,7 @@ struct ContentView: View {
                             Button {
                                 selectedCategory = category
                                 currentPage = 0
-                                shuffledQuotes = BibleQuote.sampleData(for: category).shuffled()
+                                refreshQuotes()
                             } label: {
                                 Text(category.rawValue)
                             }
@@ -89,6 +99,9 @@ struct ContentView: View {
                             .padding(20)
                     }
                 }
+            .onAppear{
+                refreshQuotes()
+            }
             }
         }
     }
