@@ -15,6 +15,10 @@ class Bookmarker: ObservableObject {
         }
     }
 
+    init() {
+        loadBookmarks()
+    }
+
 private func saveBookmarks() {
         if let encoded = try? JSONEncoder().encode(bookmarkedQuotes) {
             UserDefaults.standard.set(encoded, forKey: "bookmarkedQuotes")
@@ -46,6 +50,7 @@ func likeQuote (quote: BibleQuote) {
 func isBookmarked(quote: BibleQuote) -> Bool {
         bookmarkedQuotes.contains(quote)
     }
+
 
     
 }
