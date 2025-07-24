@@ -12,10 +12,22 @@ public struct BookmarkedTileView: View {
     
     let columns = [GridItem(.flexible()),GridItem(.flexible()) ]
     
+    private var bookmarkedQuotes: [BibleQuote] {
+        var seen = Set<String>()
+        return bookmarker.bookmarkedQuotes.filter { quote in
+            if seen.contains(quote.reference) {
+                return false
+            } else {
+                seen.insert(quote.reference)
+                return true
+            }
+        }
+    }
+    
     public var body: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(bookmarker.bookmarkedQuotes, id: \.reference) { quote in quoteTile(for: quote)
+                ForEach(bookmarkedQuotes, id: \.reference) { quote in quoteTile(for: quote)
                 }
             }
             .padding()
