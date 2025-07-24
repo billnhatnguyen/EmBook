@@ -76,7 +76,6 @@ struct ContentView: View {
                                 guard !shuffledQuotes.isEmpty, currentPage < shuffledQuotes.count else { return }
                                 let quote = shuffledQuotes[currentPage]
                                 bookmarker.toggleBookmark(quote: quote)
-                                refreshQuotes()
                             }){
                                 let isBookmarked = bookmarker.isBookmarked(quote: shuffledQuotes[currentPage])
                                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
