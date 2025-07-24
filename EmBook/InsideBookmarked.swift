@@ -28,6 +28,7 @@ struct InsideBookmarked: View {
                 .foregroundColor(.secondary)
             Spacer()
             
+            
             if !reflectionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Your Reflection:")
