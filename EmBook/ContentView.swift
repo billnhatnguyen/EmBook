@@ -48,6 +48,7 @@ struct ContentView: View {
                                 bookmarker.likeQuote(quote: shuffledQuotes[index])
 
 
+                                    .foregroundColor(isBookmarked ? .blue : .gray)
                             }
                         }
                     }
