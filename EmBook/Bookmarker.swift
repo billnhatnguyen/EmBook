@@ -44,13 +44,11 @@ func toggleBookmark (quote: BibleQuote) {
 func likeQuote (quote: BibleQuote) {
     if !bookmarkedQuotes.contains(quote) {
         bookmarkedQuotes.append(quote)
+        saveBookmarks()
     }
 }
     
 func isBookmarked(quote: BibleQuote) -> Bool {
-        bookmarkedQuotes.contains(quote)
+    bookmarkedQuotes.contains(where: {$0.text == quote.text})
     }
-
-
-    
 }
