@@ -15,6 +15,9 @@ struct InsideBookmarked: View {
     @State private var showReflection = false
     let quote: BibleQuote
     
+    @State private var showShareOptions = false
+    @StateObject private var sharing = Sharing()
+
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
@@ -60,6 +63,36 @@ struct InsideBookmarked: View {
                         .padding()
                 }
                 
+                Button(action: {
+                    sharing.currentQuote = quote
+                    sharing.currentReflection = reflectionText
+                    showShareOptions = true
+                }){
+                    Image(systemName: "square.and.arrow.up")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundColor(.blue)
+                        .padding()
+                }
+                .actionSheet(isPresented: $showShareOptions) {
+                    ActionSheet(title: Text("Share Quote"), buttons: [
+                        .default(Text("Share Image")) {
+                            sharing.shareImageOnly()
+                        },
+                        .default(Text("Share Text Only")) {
+                            sharing.shareTextOnly()
+                        },
+                        .default(Text("Share Text + Reflection")){
+                            sharing.shareTextAndReflection()
+                        },
+                        .cancel()
+                    ])
+                }
+                .sheet(isPresented: $sharing.showShareSheet) {
+                    ShareSheet(items: sharing.shareItems)
+                }
+                
                 //Reflector
                 Button(action:{
                     withAnimation{
@@ -72,8 +105,7 @@ struct InsideBookmarked: View {
                         .frame(width: 28, height: 28)
                         .padding()
                 }
-                
-                
+                                
                 
                 
                 .navigationTitle("\(quote.reference)")
