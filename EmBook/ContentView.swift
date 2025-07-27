@@ -10,14 +10,19 @@ struct ContentView: View {
     @State private var selectedCategory: Category = .all
     //This will shuffle the bible quotes of the selected category so it is not just a static list ever single time we open it up
     @State private var shuffledQuotes: [BibleQuote] = []
-    
 
     
-    //This is our bookmark manger dude!
+    //This is our bookmark manager dude!
     @StateObject private var bookmarker = Bookmarker()
-    
+
     //This is our note reflections dude!
     @StateObject private var reflectioner = Reflections()
+    
+    //This will show the sharing options of text or image
+    @State private var showShareOptions = false
+    
+    //This is our sharing dude
+    @StateObject private var sharing = Sharing()
     
     private func refreshQuotes() {
         let allQuotes = BibleQuote.sampleData(for: selectedCategory)
@@ -36,7 +41,7 @@ struct ContentView: View {
                 if shuffledQuotes.isEmpty {
                         VStack {
                             Spacer()
-                        Text("Congradulations you’ve bookmarked all quotes in this category, have fun writting reflections for them :)")
+                        Text("Congratulations you’ve bookmarked all quotes in this category, have fun writting reflections for them :)")
                                 .font(.title3)
                                 .foregroundColor(.gray)
                                 .padding()
@@ -71,23 +76,47 @@ struct ContentView: View {
                             }
                             
                             
-                            
-                            Button(action: {
-                                guard !shuffledQuotes.isEmpty, currentPage < shuffledQuotes.count else { return }
-                                let quote = shuffledQuotes[currentPage]
-                                bookmarker.toggleBookmark(quote: quote)
-                            }){
-                                let isBookmarked = bookmarker.isBookmarked(quote: shuffledQuotes[currentPage])
-                                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 28, height: 28)
-                                    .foregroundColor(isBookmarked ? .blue : .gray)
-                                    .padding()
+                            HStack{
+                                Button(action: {
+                                    guard !shuffledQuotes.isEmpty, currentPage < shuffledQuotes.count else { return }
+                                    let quote = shuffledQuotes[currentPage]
+                                    bookmarker.toggleBookmark(quote: quote)
+                                }){
+                                    let isBookmarked = bookmarker.isBookmarked(quote: shuffledQuotes[currentPage])
+                                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 28, height: 28)
+                                        .foregroundColor(isBookmarked ? .blue : .gray)
+                                        .padding()
+                                }
+                                Button(action: {
+                                    sharing.currentQuote = shuffledQuotes[currentPage]
+                                    showShareOptions = true
+                                }){
+                                    Image(systemName: "square.and.arrow.up")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 28, height: 28)
+                                        .foregroundColor(.gray)
+                                        .padding()
+                                }
+                                .actionSheet(isPresented: $showShareOptions) {
+                                    ActionSheet(title: Text("Share Quote"), buttons: [
+                                        .default(Text("Share Image")) {
+                                            sharing.shareImageOnly()
+                                        },
+                                        .default(Text("Share Text Only")) {
+                                            sharing.shareTextOnly()
+                                        },
+                                        .cancel()
+                                    ])
+                                }
+                                .sheet(isPresented: $sharing.showShareSheet) {
+                                    ShareSheet(items: sharing.shareItems)
+                                }
                             }
                             
-                            
-                            Spacer()
                         }
                     }
                 
@@ -188,6 +217,26 @@ struct ContentView: View {
                     )
                 }
             }
+    }
+
+
+    struct ScreenshotViewv1: View {
+        let quote: BibleQuote
+
+        var body: some View {
+            VStack(spacing: 16) {
+                Text("“\(quote.text)”")
+                    .font(.title2)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
+                Text(quote.formattedReference)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+            .background(Color.white)
+        }
     }
 
 
