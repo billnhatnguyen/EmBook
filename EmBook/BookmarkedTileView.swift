@@ -12,6 +12,7 @@ public struct BookmarkedTileView: View {
     
     let columns = [GridItem(.flexible()),GridItem(.flexible()) ]
     
+    
     private var bookmarkedQuotes: [BibleQuote] {
         var seen = Set<String>()
         return bookmarker.bookmarkedQuotes.filter { quote in
@@ -25,14 +26,29 @@ public struct BookmarkedTileView: View {
     }
     
     public var body: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(bookmarkedQuotes, id: \.reference) { quote in quoteTile(for: quote)
-                }
+        if bookmarker.bookmarkedQuotes.isEmpty {
+            VStack(spacing: 12){
+                
+                Text("No bookmarked quotes yet!")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Text("Start your EmBook journey of prayer and reflection by bookmarking your favorite verses.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 30)
             }
-            .padding()
+        }else{
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(bookmarkedQuotes, id: \.reference) { quote in quoteTile(for: quote)
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("Bookmarked Quotes")
         }
-        .navigationTitle("Bookmarked Quotes")
     }
     
     @ViewBuilder
